@@ -10,8 +10,7 @@ public class Sudoku {
     *
     * @param input The Sudoku array to copy.
     */
-   public Sudoku(int[][] input) {
-      clearAllowed();
+   public Sudoku(int[][] input, boolean[][][] inputAllowed) {
       
       for (int row = 0; row < 9; row++) {
          for (int col = 0; col < 9; col++) {
@@ -20,6 +19,9 @@ public class Sudoku {
                board[row][col] = 0; //0 is simply a placeholder for an empty space, so we shouldn't change what is and isn't allowed in the array.
             } else {
                set(val, row, col);
+            }
+            for (int ii = 0; ii < 9; ii++) {
+               allowed[row][col][ii] = inputAllowed[row][col][ii];
             }
          }
       }
@@ -187,7 +189,7 @@ public class Sudoku {
             if (board[row][col] == 0) {
                for (int ii = 0; ii < 9; ii++) {
                   if (allowed[row][col][ii]) {
-                     Sudoku temp = new Sudoku(board);
+                     Sudoku temp = new Sudoku(board, allowed);
                      temp.set(ii + 1, row, col);
                      if (temp.solve()) {
                         copyToThis(temp);
@@ -195,6 +197,8 @@ public class Sudoku {
                      }   
                   }
                }
+               
+               return false;
             }
          }
       }
@@ -202,30 +206,36 @@ public class Sudoku {
       return false;
    }
    
+   /**
+    * Attempts to solve this Sudoku by first using simple solution methods, and then using a recursive backtrack algorithm.
+    *
+    * @return returns true if the Sudoku was sucessfully solved, otherwise returns false.
+    */
    public boolean solve() {
       simpleSolve();
       if (isStuck()) {return false;}
-      if (isSolved()) {return true;} else {
+      if (isComplete()) {return true;} else {
          return backtrack();
       }
        
    }
    
-   public boolean simpleSolve() {
-      boolean progress = false;
-      boolean flag = true;
-      while (flag) {
-         flag = solveOne();
-         flag = solveTwo() || flag;
-         if (flag) {
-            progress = true;
-         }
+   
+   /**
+    * Repeatedly applies both simple solution methods until no progress is being made.
+    */
+   public void simpleSolve() {
+      boolean progress = true;
+      while (progress) {
+         progress = solveOne();
+         progress |= solveTwo();
       } 
-      
-      return progress;
    }
    
-   public boolean isSolved(){
+   /** 
+    * Returns true if the board is completely filled in, otherwise returns false;
+    */
+   public boolean isComplete(){
    	for (int row = 0; row < 9; row++){
    		for (int col = 0; col < 9; col++){
    			if (board[row][col] == 0){
@@ -236,16 +246,19 @@ public class Sudoku {
    	return true;
    }
    
+   /**
+    * Sets a certain cell to a value, and then adjusts the allowed array to reflect this change.
+    */
    public void set(int val, int row, int col) {
       board[row][col] = val;
       
-      //row and column
+      //No 2 the same in row and column
       for (int ii = 0; ii < 9; ii++) {
          allowed[row][ii][val-1] = false;
          allowed[ii][col][val-1] = false;
       }
       
-      //the 3x3
+      //No 2 the same in the 3x3
       int rowStart = row - (row % 3);
       int colStart = col - (col % 3);
       for (int ii = rowStart; ii < rowStart + 3; ii++) {
@@ -254,14 +267,18 @@ public class Sudoku {
          }
       }
       
-      //this square
+      //You can't put anything else in this square.
       for (int ii = 0; ii < 9; ii++) {
          allowed[row][col][ii] = false;
       }
       allowed[row][col][val-1] = true;
    }
 
-   
+   /**
+    * Applies a simple solution algorithm; if there is only one allowed value for a square, then it must go in that square.
+    *
+    * @return returns true if any squares were solved, otherwise false.
+    */
    public boolean solveOne() {
       boolean progress = false;
       for (int row = 0; row < 9; row++) {
@@ -286,10 +303,15 @@ public class Sudoku {
       return progress; 
    }
    
+   /**
+    * Applies a simple solution algorithm; if there is only square in a row, column, or 3x3 where a value is allowed, that value must go there.
+    *
+    * @return returns true if any squares were solved, otherwise false.
+    */
    public boolean solveTwo() {
       boolean progress = false;
       
-      //rows
+      //checking the rows
       for (int row = 0; row < 9; row++) {
          int[] count = new int[9];
          for (int col = 0; col < 9; col++) {
@@ -316,7 +338,7 @@ public class Sudoku {
          }
       }
       
-      //cols
+      //checking the columns
       for (int col = 0; col < 9; col++) {
          int[] count = new int[9];
          for (int row = 0; row < 9; row++) {
@@ -343,7 +365,7 @@ public class Sudoku {
          }
       }
       
-      //squares
+      //checking the 3x3 squares
       for (int x = 0; x < 9; x += 3) {
          for (int y = 0; y < 9; y += 3) {
             int[] count = new int[9];
