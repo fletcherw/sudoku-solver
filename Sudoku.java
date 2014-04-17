@@ -1,10 +1,15 @@
 import java.util.Arrays;
 
 public class Sudoku {
-   private int[][] master = new int[9][9];
+   private int[][] original = new int[9][9];
    private int[][] board = new int[9][9];
    private boolean[][][] allowed = new boolean[9][9][9];
    
+   /**
+    * Constructor to create a new Sudoku object from an array of Sudoku values, with 0 representing a blank.
+    *
+    * @param input The Sudoku array to copy.
+    */
    public Sudoku(int[][] input) {
       clearAllowed();
       
@@ -12,41 +17,59 @@ public class Sudoku {
          for (int col = 0; col < 9; col++) {
             int val = input[row][col];
             if (val == 0) {
-               board[row][col] = 0;
+               board[row][col] = 0; //0 is simply a placeholder for an empty space, so we shouldn't change what is and isn't allowed in the array.
             } else {
                set(val, row, col);
             }
          }
       }
       
-      copyArray(board, master);
+      copyArray(board, original); //record the original configuration of the board for displaying the solved and unsolved versions later.
    }
    
+   /**
+    * Constructor for a new Sudoku object from a 81 character string representing all of the values in the grid, 0 representing a blank.
+    *
+    * @param input The Sudoku array to import.
+    */
+   public Sudoku(String input) {
+      clearAllowed();
+      
+      for (int row = 0; row < 9; row++) {
+         for (int col = 0; col < 9; col++) {
+            int val = Character.digit(input.charAt((9 * row) + col), 10);
+            if (val == 0) {
+               board[row][col] = 0; //0 is simply a placeholder for an empty space, so we shouldn't change what is and isn't allowed in the array.
+            } else {
+               set(val, row, col);
+            }
+         }
+      }
+      
+      copyArray(board, original); //record the original configuration of the board for displaying the solved and unsolved versions later.
+   }
+   
+   /**
+    * Returns the value held in the board at a certain index.
+    *
+    * @return the held value.
+    */
    public int getBoard(int row, int col) {
       return board[row][col];
    }
    
+   /**
+    * Returns true if a number is valid in a particular square, otherwise returns false.
+    *
+    * @return true if valid, otherwise false.
+    */
    public boolean getAllowed(int val, int row, int col) {
       return allowed[row][col][val];
    }
    
-   public Sudoku(String input) {
-      clearAllowed()   ;
-      
-      for (int row = 0; row < 9; row++) {
-         for (int col = 0; col < 9; col++) {
-            int val = Character.digit(input.charAt((9 * row) + col), 10);;
-            if (val == 0) {
-               board[row][col] = 0;
-            } else {
-               set(val, row, col);
-            }
-         }
-      }
-      
-      copyArray(board, master);
-   }
-   
+   /**
+    * Sets the array of allowed values to all true.
+    */
    public void clearAllowed() {
       for (int ii = 0; ii < 9; ii++) {
          for (int jj = 0; jj < 9; jj++) {
@@ -57,6 +80,11 @@ public class Sudoku {
       }  
    }
    
+   /**
+    * Replaces the board and allowed values of this Sudoku with those held in a different Sudoku object.
+    *
+    * @param s the Sudoku object to copy from.
+    */
    public void copyToThis(Sudoku s) {
       for (int ii = 0; ii < 9; ii++) {
          for (int jj = 0; jj < 9; jj++) {
@@ -68,7 +96,10 @@ public class Sudoku {
       } 
    }
    
-   public void copyArray(int[][] from, int[][]  to) {
+   /**
+    * Copies all of the values in a two dimensional array to a specified array.
+    */
+   public void copyArray(int[][] from, int[][] to) {
       for(int ii = 0; ii < from.length; ii++) {
         int[] aMatrix = from[ii];
         int   aLength = aMatrix.length;
@@ -77,6 +108,9 @@ public class Sudoku {
       }
    }
    
+   /**
+    * Returns a nicely formatted String representation of the current status of the puzzle.
+    */
    public String formatSudoku() {
       String formatted = "";
       for (int row = 0; row < 9; row++) {
@@ -92,7 +126,10 @@ public class Sudoku {
       
       return formatted;
    }
-      
+   
+   /**
+    * Returns a nicely formatted String representation of the initial and current status of the puzzle.
+    */
    public String formatSolution() {
       String formatted = "";
       for (int row = 0; row < 9; row++) {
@@ -116,11 +153,16 @@ public class Sudoku {
 
    }
 
-   
+   /**
+    * Returns true if a given value is valid in the specified location, differs from getAllowed() in that this adjusts for the 0 indexing of the allowed array.
+    */
    public boolean check(int val, int row, int col) {
       return allowed[row][col][val-1];
    }
    
+   /**
+    * Returns true if there is any square in the board which has no possible values, otherwise returns false.
+    */
    public boolean isStuck() {
       for (int row = 0; row < 9; row++) {
          for (int col = 0; col < 9; col++) {
