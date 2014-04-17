@@ -136,7 +136,7 @@ public class Sudoku {
          if (row % 3 == 0) {formatted += "+ - - - + - - - + - - - +     + - - - + - - - + - - - +\n";}
          for (int col = 0; col < 9; col++) {
            if (col % 3 == 0) {formatted += "| ";}
-           formatted += (master[row][col] == 0 ? "." : master[row][col]);
+           formatted += (original[row][col] == 0 ? "." : original[row][col]);
            formatted += " ";
          }
          formatted += "|     ";
