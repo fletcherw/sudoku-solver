@@ -1,9 +1,9 @@
 import java.util.Arrays;
 
 public class Sudoku {
-   private int[][] original = new int[9][9];
-   private int[][] board = new int[9][9];
-   private boolean[][][] allowed = new boolean[9][9][9];
+   protected int[][] original = new int[9][9];
+   protected int[][] board = new int[9][9];
+   protected boolean[][][] allowed = new boolean[9][9][9];
    
    /**
     * Constructor to create a new Sudoku object from an array of Sudoku values, with 0 representing a blank.
@@ -16,7 +16,7 @@ public class Sudoku {
          for (int col = 0; col < 9; col++) {
             int val = input[row][col];
             if (val == 0) {
-               board[row][col] = 0; //0 is simply a placeholder for an empty space, so we shouldn't change what is and isn't allowed in the array.
+               board[row][col] = 0; //0 is simply a placeholder for an empty space, so we shouldn't change the allowed array.
             } else {
                set(val, row, col);
             }
@@ -88,14 +88,8 @@ public class Sudoku {
     * @param s the Sudoku object to copy from.
     */
    public void copyToThis(Sudoku s) {
-      for (int ii = 0; ii < 9; ii++) {
-         for (int jj = 0; jj < 9; jj++) {
-            board[ii][jj] = s.getBoard(ii, jj);
-            for (int kk = 0; kk < 9; kk++) {
-               allowed[ii][jj][kk] = s.getAllowed(kk, ii, jj);
-            }
-         }
-      } 
+      this.board = s.board;
+      this.allowed = s.allowed;
    }
    
    /**
@@ -181,6 +175,9 @@ public class Sudoku {
       return false;
    }
    
+   /**
+    * Attempts to solve this Sudoku using a recursive backtracking algorithm. Returns true if sucessfully solved, false otherwise.
+    */
    public boolean backtrack() {
       if (isStuck()) {return false;}
       
@@ -189,9 +186,9 @@ public class Sudoku {
             if (board[row][col] == 0) {
                for (int ii = 0; ii < 9; ii++) {
                   if (allowed[row][col][ii]) {
-                     Sudoku temp = new Sudoku(board, allowed);
+                     Sudoku temp = new Sudoku(board, allowed); //Try it in a copy of this board.
                      temp.set(ii + 1, row, col);
-                     if (temp.solve()) {
+                     if (temp.solve()) { //If the hypothetical solution was good, copy it to this.
                         copyToThis(temp);
                         return true;
                      }   
@@ -227,8 +224,7 @@ public class Sudoku {
    public void simpleSolve() {
       boolean progress = true;
       while (progress) {
-         progress = solveOne();
-         progress |= solveTwo();
+         progress = solveOne() || solveTwo();
       } 
    }
    
@@ -243,6 +239,7 @@ public class Sudoku {
    			}
    		}
    	}
+      
    	return true;
    }
    
